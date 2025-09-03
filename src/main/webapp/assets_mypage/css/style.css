@@ -1,0 +1,120 @@
+/* Navigation */
+.top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(7, 11, 26, 0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+
+.brand-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 5rem;
+}
+
+.nav-link {
+    padding: 0.5rem 0.75rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: color 0.2s;
+    font-size: 0.875rem;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: white;
+}
+
+.offcanvas-body .nav-link {
+    color: rgba(0, 0, 0, 1)
+}
+
+.navbar-toggler {
+    border: 0;
+    padding: 0;
+}
+
+.dropdown-item.active,
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+
+
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #ccc;
+    color: #333;
+}
+
+.btn-check:checked + .btn,
+.btn.active,
+.btn.show,
+.btn:first-child:active,
+:not(.btn-check) + .btn:active {
+    border: 0;
+    background-color: unset;
+    box-shadow: unset;
+}
+
+.btn-primary {
+    background: white;
+    color: #070b1a;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-close:focus {
+    box-shadow: none;
+}
+
+.page-link {
+    color: #888 !important;
+    /*padding: 6px 9px !important;
+    line-height: 1;*/
+}
+
+.active>.page-link, .page-link.active {
+    background: darkturquoise !important;
+    border: 1px solid darkturquoise !important;
+    color: #fff !important;
+}
