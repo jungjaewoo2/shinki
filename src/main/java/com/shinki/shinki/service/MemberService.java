@@ -2,6 +2,8 @@ package com.shinki.shinki.service;
 
 import com.shinki.shinki.entity.Member;
 import com.shinki.shinki.repository.MemberRepository;
+import com.shinki.shinki.repository.RequestRepository;
+import com.shinki.shinki.repository.InquiryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,12 @@ public class MemberService {
     
     @Autowired
     private MemberRepository memberRepository;
+    
+    @Autowired
+    private RequestRepository requestRepository;
+    
+    @Autowired
+    private InquiryRepository inquiryRepository;
     
     public Member registerMember(Member member) {
         if (memberRepository.existsByUsername(member.getUsername())) {
@@ -26,6 +34,13 @@ public class MemberService {
     }
     
     public void deleteMember(Long memberId) {
+        // 회원의 의뢰내역 삭제
+        requestRepository.deleteByMemberId(memberId);
+        
+        // 회원의 문의사항 삭제
+        inquiryRepository.deleteByMemberId(memberId);
+        
+        // 회원 삭제
         memberRepository.deleteById(memberId);
     }
     

@@ -25,12 +25,12 @@
 
         <div class="nav-section">
             <div class="nav-title">
-                주문내역
+                의뢰내역
                 <span><i class="bi bi-caret-down-fill"></i></span>
             </div>
             <div class="nav-items">
-                <div class="nav-item" onclick="location.href='/mypage/orders'">주문목록 / 현황</div>
-                <div class="nav-item" onclick="location.href='/mypage/cancelled-orders'">취소주문내역</div>
+                <div class="nav-item" onclick="location.href='/mypage/orders'">의뢰 목록 / 현황</div>
+                <div class="nav-item" onclick="location.href='/mypage/cancelled-orders'">취소 내역</div>
             </div>
         </div>
 

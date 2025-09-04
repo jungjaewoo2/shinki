@@ -148,26 +148,26 @@
              });
          });
          
-         // 파일 다운로드 함수
-         function downloadFiles(requestIds) {
-             // POST 요청을 보내기 위한 폼 생성
-             const form = document.createElement('form');
-             form.method = 'POST';
-             form.action = '/mypage/download-files';
-             
-             // requestIds를 hidden input으로 추가
-             requestIds.forEach(function(id) {
-                 const hiddenInput = document.createElement('input');
-                 hiddenInput.type = 'hidden';
-                 hiddenInput.name = 'requestIds';
-                 hiddenInput.value = id;
-                 form.appendChild(hiddenInput);
-             });
-             
-             document.body.appendChild(form);
-             form.submit();
-             document.body.removeChild(form);
-         }
+                   // 파일 다운로드 함수
+          function downloadFiles(requestIds) {
+              // POST 요청을 보내기 위한 폼 생성
+              const form = document.createElement('form');
+              form.method = 'POST';
+              form.action = '/mypage/download-files';
+              
+              // requestIds를 hidden input으로 추가
+              requestIds.forEach(function(id) {
+                  const hiddenInput = document.createElement('input');
+                  hiddenInput.type = 'hidden';
+                  hiddenInput.name = 'requestIds';
+                  hiddenInput.value = id;
+                  form.appendChild(hiddenInput);
+              });
+              
+              document.body.appendChild(form);
+              form.submit();
+              document.body.removeChild(form);
+          }
      });
  </script>
 

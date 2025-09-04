@@ -35,7 +35,8 @@
                     </div>
                     <div class="border-bottom pb-3 text-black-50">
                         2. 운영 내역은 삭제됩니다.<br>
-                        - 탈퇴가 완료되면 캠페인 운영 이력, 결제 정보 등은 복구가 불가능하며, 신규 가입 시에도 이전 기록은 승계되지 않습니다.
+                        - 탈퇴가 완료되면 캠페인 운영 이력, 결제 정보 등은 복구가 불가능하며, 신규 가입 시에도 이전 기록은 승계되지 않습니다.<br>
+                        - <strong class="text-danger">의뢰내역과 문의사항이 모두 삭제됩니다.</strong>
                     </div>
                     <div>
                         SYNAPSE 3D은 언제나 고객님의 성장을 응원합니다.<br>탈퇴 후에도 언제든 다시 찾아주시면, 진심을 다해 함께하겠습니다.
@@ -81,7 +82,7 @@ function confirmWithdrawal() {
     .then(data => {
         if (data.success) {
             // 비밀번호가 맞으면 확인 알림창 표시
-            if (confirm('확인 버튼을 클릭시 회원 탈퇴가 진행됩니다.')) {
+            if (confirm('회원 탈퇴 시 의뢰내역과 문의사항이 모두 삭제됩니다.\n정말 탈퇴하시겠습니까?')) {
                 // 확인 버튼 클릭 시 탈퇴 처리
                 document.getElementById('withdrawalForm').submit();
             }

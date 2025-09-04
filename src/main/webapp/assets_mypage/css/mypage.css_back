@@ -720,7 +720,7 @@ tr {
 /* 스피너 */
 
 .custom-spinner {
-    width: .5rem;
+    /*width: 3rem;*/
     height: 3rem;
     display: inline-block;
     position: relative;

@@ -52,10 +52,10 @@ public class RequestService {
     }
 
     public List<Request> getCancelledRequestsByMemberId(Long memberId) {
-        return requestRepository.findByMemberIdAndStatusOrderByCreatedAtDesc(memberId, "취소");
+        return requestRepository.findByMemberIdAndStatusInOrderByCreatedAtDesc(memberId, List.of("취소 진행중", "취소 완료"));
     }
 
-    public Request updateRequest(Request updatedRequest, MultipartFile file) throws IOException {
+    public Request updateRequest(Request updatedRequest, MultipartFile file, String existingFilePath, boolean shouldRemoveExistingFile) throws IOException {
         Request existingRequest = getRequestById(updatedRequest.getId());
 
         existingRequest.setPrivacyAgreement(updatedRequest.getPrivacyAgreement());
@@ -64,15 +64,26 @@ public class RequestService {
         existingRequest.setTitle(updatedRequest.getTitle());
         existingRequest.setContent(updatedRequest.getContent());
 
-        // 파일 업로드 처리
-        if (file != null && !file.isEmpty()) {
-            // 기존 파일 삭제 (만약 존재한다면)
+        // 기존 파일 삭제 플래그가 true인 경우
+        if (shouldRemoveExistingFile) {
             if (existingRequest.getFilePath() != null && !existingRequest.getFilePath().isEmpty()) {
-                Path oldFilePath = Paths.get(existingRequest.getFilePath());
+                Path oldFilePath = Paths.get("src/main/webapp/uploads/request/" + existingRequest.getFilePath());
                 try {
                     Files.deleteIfExists(oldFilePath);
                 } catch (IOException e) {
-                    // 파일 삭제 실패 시 로깅
+                    System.err.println("기존 파일 삭제 실패: " + oldFilePath + " - " + e.getMessage());
+                }
+            }
+            existingRequest.setFilePath(null);
+        }
+        // 새 파일이 업로드된 경우
+        else if (file != null && !file.isEmpty()) {
+            // 기존 파일 삭제 (만약 존재한다면)
+            if (existingRequest.getFilePath() != null && !existingRequest.getFilePath().isEmpty()) {
+                Path oldFilePath = Paths.get("src/main/webapp/uploads/request/" + existingRequest.getFilePath());
+                try {
+                    Files.deleteIfExists(oldFilePath);
+                } catch (IOException e) {
                     System.err.println("기존 파일 삭제 실패: " + oldFilePath + " - " + e.getMessage());
                 }
             }
@@ -88,18 +99,12 @@ public class RequestService {
             Path filePath = Paths.get(uploadDir + fileName);
             Files.write(filePath, file.getBytes());
 
-            existingRequest.setFilePath(uploadDir + fileName);
-        } else if (updatedRequest.getFilePath() == null || updatedRequest.getFilePath().isEmpty()) {
-            // 새 파일이 없고, 요청된 파일 경로도 없다면 기존 파일 삭제 (파일 삭제 버튼 클릭 시)
-            if (existingRequest.getFilePath() != null && !existingRequest.getFilePath().isEmpty()) {
-                Path oldFilePath = Paths.get(existingRequest.getFilePath());
-                try {
-                    Files.deleteIfExists(oldFilePath);
-                } catch (IOException e) {
-                    System.err.println("기존 파일 삭제 실패: " + oldFilePath + " - " + e.getMessage());
-                }
-                existingRequest.setFilePath(null); // 파일 경로 초기화
-            }
+            // 파일명만 저장 (경로 제외)
+            existingRequest.setFilePath(fileName);
+        }
+        // 새 파일이 없고 기존 파일 삭제 플래그도 false인 경우 기존 파일 유지
+        else if (existingFilePath != null && !existingFilePath.isEmpty()) {
+            existingRequest.setFilePath(existingFilePath);
         }
 
         return requestRepository.save(existingRequest);

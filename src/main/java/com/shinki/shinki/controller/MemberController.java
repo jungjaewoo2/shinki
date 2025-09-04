@@ -286,9 +286,9 @@ public class MemberController {
         try {
             Member member = memberService.findByUsername(username);
             List<Request> completedRequests = requestService.getRequestsByMemberId(member.getId());
-            // '완료' 상태의 의뢰만 필터링
+            // '작업 완료' 상태의 의뢰만 필터링
             completedRequests = completedRequests.stream()
-                .filter(r -> "완료".equals(r.getStatus()))
+                .filter(r -> "작업 완료".equals(r.getStatus()))
                 .collect(Collectors.toList());
             
             // 날짜별, application_type별로 그룹화

@@ -7,8 +7,8 @@
  <!-- 주문내역 페이지 -->
  <div id="orders-page" class="order-detail page d-flex flex-column h-100">
      <div class="align-items-center d-flex flex-column flex-lg-row justify-content-between page-header">
-         <div class="page-title">주문현황</div>
-         <div class="breadcrumb">마이페이지 > 주문내역 > 주문목록 / 현황 > 주문현황</div>
+         <div class="page-title">의뢰 현황</div>
+         <div class="breadcrumb">마이페이지 > 의뢰 내역 > 의뢰 목록 / 현황</div>
      </div>
 
      <div class="card d-flex flex-fill flex-column gap-3 overflow-auto">
@@ -19,10 +19,10 @@
                          <div style="font-weight: bold;">
                              <c:choose>
                                  <c:when test="${not empty request.createdAt}">
-                                     ${request.createdAt.year}.<fmt:formatNumber value="${request.createdAt.monthValue}" pattern="00"/>.<fmt:formatNumber value="${request.createdAt.dayOfMonth}" pattern="00"/> 주문
+                                     ${request.createdAt.year}.<fmt:formatNumber value="${request.createdAt.monthValue}" pattern="00"/>.<fmt:formatNumber value="${request.createdAt.dayOfMonth}" pattern="00"/> ${request.status}
                                  </c:when>
                                  <c:otherwise>
-                                     2025.05.29 주문
+                                     2025.05.29 등록
                                  </c:otherwise>
                              </c:choose>
                          </div>
@@ -62,11 +62,14 @@
                  </div>
              </div>
          </div>
+         
+         
+         <!---진행바 시작-->
          <div class="card progress-box d-flex gap-3">
              <div>
                  <div class="progress-stacked">
                      <div style="width: 20%;">
-                         <div class="progress-step ${not empty request and request.regCondition >= 1 and request.regCondition <= 1 ? 'active' : ''}">
+                         <div class="progress-step ${not empty request and (request.status == '의뢰 확인중' || request.status == '견적중' || request.status == '결제 진행' || request.status == '작업중' || request.status == '작업 완료') ? 'active' : ''}">
                              <div class="prog-cont">
                                  <span class="step-number"></span>
                              </div>
@@ -74,7 +77,7 @@
                          <div class="prog-txt text-center pt-2"><span class="step-label">의뢰 확인중</span></div>
                      </div>
                      <div style="width: 20%;">
-                         <div class="progress-step ${not empty request and request.regCondition >= 2 and request.regCondition <= 2 ? 'active' : ''}">
+                         <div class="progress-step ${not empty request and (request.status == '견적중' || request.status == '결제 진행' || request.status == '작업중' || request.status == '작업 완료') ? 'active' : ''}">
                              <div class="prog-cont">
                                  <span class="step-number"></span>
                              </div>
@@ -82,32 +85,32 @@
                          <div class="prog-txt text-center pt-2"><span class="step-label">견적중</span></div>
                      </div>
                      <div style="width: 20%;">
-                         <div class="progress-step ${not empty request and request.regCondition >= 3 and request.regCondition <= 3 ? 'active' : ''}">
+                         <div class="progress-step ${not empty request and (request.status == '결제 진행' || request.status == '작업중' || request.status == '작업 완료') ? 'active' : ''}">
                              <div class="prog-cont">
                                  <span class="step-number"></span>
                              </div>
                          </div>
-                         <div class="prog-txt text-center pt-2"><span class="step-label">결제진행</span></div>
+                         <div class="prog-txt text-center pt-2"><span class="step-label">결제 진행</span></div>
                      </div>
                      <div style="width: 20%;">
-                         <div class="progress-step ${not empty request and request.regCondition >= 4 and request.regCondition <= 4 ? 'active' : ''}">
+                         <div class="progress-step ${not empty request and (request.status == '작업중' || request.status == '작업 완료') ? 'active' : ''}">
                              <div class="prog-cont">
                                  <span class="step-number"></span>
                              </div>
                          </div>
-                         <div class="prog-txt text-center pt-2"><span class="step-label">작업수행</span></div>
+                         <div class="prog-txt text-center pt-2"><span class="step-label">작업중</span></div>
                      </div>
                      <div style="width: 20%;">
-                         <div class="progress-step ${not empty request and request.regCondition >= 5 and request.regCondition <= 5 ? 'active' : ''}">
+                         <div class="progress-step ${not empty request and request.status == '작업 완료' ? 'active' : ''}">
                              <div class="prog-cont">
                                  <span class="step-number"></span>
                              </div>
                          </div>
-                         <div class="prog-txt text-center pt-2"><span class="step-label">완료</span></div>
+                         <div class="prog-txt text-center pt-2"><span class="step-label">작업 완료</span></div>
                      </div>
                  </div>
              </div>
-             <div class="prog-pane bg-body-tertiary p-3 rounded-2">
+             <div class="prog-pane bg-body-tertiary p-3 rounded-2" id="step1-panel">
                  <div class="fw-bold mb-3 progress-title">1단계_접수 및 파일 업로드</div>
                  <div class="bg-white p-3">
                      <div class="form-group flex-column align-items-baseline gap-1">
@@ -121,19 +124,27 @@
                      <div class="form-group flex-column align-items-baseline gap-1">
                          <label class="form-label w-100"><i class="bi bi-arrow-right-circle-fill"></i> 파일 업로드 현황</label>
                          <c:if test="${not empty request and not empty request.filePath}">
-                             <div class="text-success">파일이 업로드되었습니다: ${request.filePath}</div>
+                             <div class="text-success">${request.filePath}</div>
                          </c:if>
                          <c:if test="${empty request or empty request.filePath}">
                              <div class="text-muted">업로드된 파일이 없습니다.</div>
                          </c:if>
                      </div>
-                     <div class="text-center">
-                         <a href="/mypage/edit-request/${request.id}" class="btn btn-danger" style="flex: 1;">수정하기</a>
-                         <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="cancelRequest('${request.id}', event)" data-status="<c:out value="${request.status}"/>">취소하기</button>
-                     </div>
+                                           <div class="text-center">
+                          <c:choose>
+                              <c:when test="${not empty request and (request.status == '작업 완료' || request.status == '취소 진행중' || request.status == '취소 완료')}">
+                                  <button class="btn btn-danger" style="flex: 1;" disabled>수정하기</button>
+                                  <button type="button" class="btn btn-secondary" style="flex: 1;" disabled>취소하기</button>
+                              </c:when>
+                              <c:otherwise>
+                                  <a href="/mypage/edit-request/${request.id}" class="btn btn-danger" style="flex: 1;">수정하기</a>
+                                  <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="cancelRequest('${request.id}', event)" data-status="<c:out value="${request.status}"/>">취소하기</button>
+                              </c:otherwise>
+                          </c:choose>
+                      </div>
                  </div>
              </div>
-             <div class="prog-pane bg-body-tertiary p-3 rounded-2">
+             <div class="prog-pane bg-body-tertiary p-3 rounded-2" id="step2-panel">
                  <div class="fw-bold mb-3 progress-title">2단계_상담 및 견적안내</div>
                  <div class="align-items-center d-flex flex-column gap-3 bg-white p-3">
                      <div class="custom-spinner">
@@ -148,19 +159,19 @@
                      </div>
                      <div class="">
                          <c:choose>
-                             <c:when test="${not empty request and request.regCondition >= 2}">견적 완료</c:when>
+                             <c:when test="${not empty request and (request.status == '견적중' || request.status == '결제 진행' || request.status == '작업중' || request.status == '작업 완료')}">견적 완료</c:when>
                              <c:otherwise>견적중</c:otherwise>
                          </c:choose>
                      </div>
                      <div class="text-black-50">
                          <c:choose>
-                             <c:when test="${not empty request and request.regCondition >= 2}">견적이 완료되었습니다.</c:when>
+                             <c:when test="${not empty request and (request.status == '견적중' || request.status == '결제 진행' || request.status == '작업중' || request.status == '작업 완료')}">견적이 완료되었습니다.</c:when>
                              <c:otherwise>요청하신 내용으로 연락 예정입니다.</c:otherwise>
                          </c:choose>
                      </div>
                  </div>
              </div>
-             <div class="prog-pane bg-body-tertiary p-3 rounded-2">
+             <div class="prog-pane bg-body-tertiary p-3 rounded-2" id="step3-panel">
                  <div class="fw-bold mb-3 progress-title">3단계_결제정보</div>
                  <div class="bg-white p-3">
                      <div class="border-bottom pb-3" style="border-bottom: 1px dashed #d9d9d9 !important;">
@@ -170,7 +181,7 @@
                      <div class="d-flex justify-content-end gap-3 pt-1">총 결제금액 <span class="text-danger fw-bold">20,000,000원</span></div>
                  </div>
              </div>
-             <div class="prog-pane bg-body-tertiary p-3 rounded-2">
+             <div class="prog-pane bg-body-tertiary p-3 rounded-2" id="step4-panel">
                  <div class="fw-bold mb-3 progress-title">4단계_작업 수행</div>
                  <div class="align-items-center d-flex flex-column gap-3 justify-content-center bg-white p-3">
                      <div class="custom-spinner">
@@ -185,88 +196,101 @@
                      </div>
                      <div class="">
                          <c:choose>
-                             <c:when test="${not empty request and request.regCondition >= 4}">작업 완료</c:when>
-                             <c:when test="${not empty request and request.regCondition >= 3}">작업중</c:when>
+                             <c:when test="${not empty request and request.status == '작업 완료'}">작업 완료</c:when>
+                             <c:when test="${not empty request and request.status == '작업중'}">작업중</c:when>
                              <c:otherwise>대기중</c:otherwise>
                          </c:choose>
                      </div>
                  </div>
              </div>
-             <div class="prog-pane bg-body-tertiary p-3 rounded-2">
+             <div class="prog-pane bg-body-tertiary p-3 rounded-2" id="step5-panel">
                  <div class="fw-bold mb-3 progress-title">5단계_작업 완료</div>
                  <div class="d-none d-lg-block bg-white p-3">
                      <c:choose>
-                         <c:when test="${not empty request and request.regCondition >= 5}">
+                         <c:when test="${not empty request and request.status == '작업 완료'}">
                              <div class="">첨부파일을 다운로드하여 결과물을 확인해보세요.</div>
                          </c:when>
                          <c:otherwise>
                              <div class="text-muted">작업이 완료되면 결과물을 확인할 수 있습니다.</div>
                          </c:otherwise>
                      </c:choose>
-                     <table class="table table-bordered">
-                         <thead>
-                             <tr>
-                                 <th>No.</th>
-                                 <th>의뢰내용</th>
-                                 <th>다운로드 상태</th>
-                                 <th>첨부파일</th>
-                             </tr>
-                         </thead>
-                         <tbody class="">
-                             <tr>
-                                 <td>Project250101</td>
-                                 <td class="w-50">
-                                     <div class="request-details">간 수술 시뮬레이션 의뢰합니다. 시뮬레이션은 어떤식으로 진행되나요?</div>
-                                 </td>
-                                 <td>2025.01.31까지</td>
-                                 <td><button type="button" class="btn"><img src="../assets/images/download-icon.png"></button></td>
-                            </tr>
-                             <tr>
-                                 <td>Project250101</td>
-                                 <td class="w-50">
-                                     <div class="request-details">심장 수술 시뮬레이션 의뢰합니다. 시뮬레이션은 어떤식으로 진행되나요?</div>
-                                 </td>
-                                 <td>완료</td>
-                                 <td><button type="button" class="btn"><img src="../assets/images/download-icon.png"></button></td>
-                            </tr>
-                             <tr>
-                                 <td>Project250101</td>
-                                 <td class="w-50">
-                                     <div class="request-details">폐 수술 시뮬레이션 의뢰합니다. 시뮬레이션은 어떤식으로 진행되나요?</div>
-                                 </td>
-                                 <td>2025.01.31까지</td>
-                                 <td><button type="button" class="btn"><img src="../assets/images/download-icon.png"></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                           <table class="table table-bordered">
+                          <thead>
+                              <tr>
+                                  <th>No.</th>
+                                  <th>의뢰내용</th>
+                                  <th>다운로드 상태</th>
+                                  <th>첨부파일</th>
+                              </tr>
+                          </thead>
+                          <tbody class="">
+                              <c:choose>
+                                  <c:when test="${not empty request and request.status == '작업 완료'}">
+                                      <tr>
+                                          <td>Project${request.id}</td>
+                                          <td class="w-50">
+                                              <div class="request-details">${request.content}</div>
+                                          </td>
+                                          <td>작업 완료</td>
+                                          <td>
+                                              <c:if test="${not empty request.filePath}">
+                                                  <button type="button" class="btn" onclick="downloadFile('${request.id}', '${request.filePath}')">
+                                                      <img src="/assets/images/download-icon.png">
+                                                  </button>
+                                              </c:if>
+                                              <c:if test="${empty request.filePath}">
+                                                  <span class="text-muted">파일 없음</span>
+                                              </c:if>
+                                          </td>
+                                      </tr>
+                                  </c:when>
+                                  <c:otherwise>
+                                      <tr>
+                                          <td colspan="4" class="text-center text-muted">작업이 완료되면 결과물을 확인할 수 있습니다.</td>
+                                      </tr>
+                                  </c:otherwise>
+                              </c:choose>
+                          </tbody>
+                      </table>
                 </div>
-                <div class="d-block d-lg-none">
-                    <div class="d-flex flex-column gap-1 border-top border-bottom pb-1 pt-1">
-                        <div class="order-numb align-items-center d-flex justify-content-between">
-                            <div>No. Project250101</div>
-                            <div><button type="button" class="btn btn-sm"><img src="../assets/images/download-icon.png"></button></div>
-                        </div>
-                        <div class="order-contents">간 수술 시뮬레이션 의뢰합니다. 시뮬레이션은 어떤식으로 진행되나요?</div>
-                        <div class="align-items-center d-flex justify-content-end">
-
-                            <div class="order-date">2025.01.31까지</div>
-                        </div>
-
-                    </div>
-                    <div class="d-flex flex-column gap-1 border-bottom pb-1 pt-1">
-                        <div class="order-numb align-items-center d-flex justify-content-between">
-                            <div>No. Project250102</div>
-                            <div><button type="button" class="btn btn-sm"><img src="../assets/images/download-icon.png"></button></div>
-                        </div>
-                        <div class="order-contents">심장 수술 시뮬레이션 의뢰합니다. 시뮬레이션은 어떤식으로 진행되나요?</div>
-                        <div class="align-items-center d-flex justify-content-end">
-
-                            <div class="order-date">2025.01.31까지</div>
-                        </div>
-
-                    </div>
-                </div>
+                                 <div class="d-block d-lg-none">
+                     <c:choose>
+                         <c:when test="${not empty request and request.status == '작업 완료'}">
+                             <div class="d-flex flex-column gap-1 border-top border-bottom pb-1 pt-1">
+                                 <div class="order-numb align-items-center d-flex justify-content-between">
+                                     <div>No. Project${request.id}</div>
+                                     <div>
+                                         <c:if test="${not empty request.filePath}">
+                                             <button type="button" class="btn btn-sm" onclick="downloadFile('${request.id}', '${request.filePath}')">
+                                                 <img src="/assets/images/download-icon.png">
+                                             </button>
+                                         </c:if>
+                                         <c:if test="${empty request.filePath}">
+                                             <span class="text-muted">파일 없음</span>
+                                         </c:if>
+                                     </div>
+                                 </div>
+                                 <div class="order-contents">${request.content}</div>
+                                 <div class="align-items-center d-flex justify-content-end">
+                                     <div class="order-date">작업 완료</div>
+                                 </div>
+                             </div>
+                         </c:when>
+                         <c:otherwise>
+                             <div class="text-center text-muted py-3">
+                                 작업이 완료되면 결과물을 확인할 수 있습니다.
+                             </div>
+                         </c:otherwise>
+                     </c:choose>
+                 </div>
             </div>
+         <!---진행바 끝-->
+
+
+
+
+
+
         </div>
     </div>
 </div>
@@ -342,22 +366,49 @@ document.addEventListener('DOMContentLoaded', function () {
              updatePanes(clickedIndex);
          }
 
-         // 초기 상태 설정
-         function initialize() {
-             // reg_condition 값에 따라 초기 상태 설정
-             const regCondition = parseInt('${not empty request and request.regCondition != null ? request.regCondition : 1}') || 1;
-             
-             // 모든 .progress-step에서 .active 클래스 제거
-             progressSteps.forEach(step => step.classList.remove('active'));
-             
-             // reg_condition 값에 해당하는 단계까지만 활성화 (0부터 시작)
-             for (let i = 0; i < regCondition && i < progressSteps.length; i++) {
-                 progressSteps[i].classList.add('active');
-             }
-             
-             // 첫 번째 패널 표시 -> regCondition에 해당하는 패널 표시
-             updatePanes(regCondition - 1);
-         }
+                   // 초기 상태 설정
+          function initialize() {
+              // status 값에 따라 초기 상태 설정
+              const requestStatus = '${not empty request ? request.status : ""}';
+              
+              // 모든 .progress-step에서 .active 클래스 제거
+              progressSteps.forEach(step => step.classList.remove('active'));
+              
+              // 모든 패널 숨기기
+              progPanes.forEach(pane => pane.style.display = 'none');
+              
+              // status에 따라 적절한 단계까지 활성화
+              if (requestStatus === '의뢰 확인중' || requestStatus === '견적중' || requestStatus === '결제 진행' || requestStatus === '작업중' || requestStatus === '작업 완료') {
+                  progressSteps[0].classList.add('active'); // 1단계 활성화
+              }
+              if (requestStatus === '견적중' || requestStatus === '결제 진행' || requestStatus === '작업중' || requestStatus === '작업 완료') {
+                  progressSteps[1].classList.add('active'); // 2단계 활성화
+              }
+              if (requestStatus === '결제 진행' || requestStatus === '작업중' || requestStatus === '작업 완료') {
+                  progressSteps[2].classList.add('active'); // 3단계 활성화
+              }
+              if (requestStatus === '작업중' || requestStatus === '작업 완료') {
+                  progressSteps[3].classList.add('active'); // 4단계 활성화
+              }
+              if (requestStatus === '작업 완료') {
+                  progressSteps[4].classList.add('active'); // 5단계 활성화
+              }
+              
+              // status에 따라 해당하는 패널 표시
+              if (requestStatus === '의뢰 확인중') {
+                  updatePanes(0); // 1단계 패널
+              } else if (requestStatus === '견적중') {
+                  updatePanes(1); // 2단계 패널
+              } else if (requestStatus === '결제 진행') {
+                  updatePanes(2); // 3단계 패널
+              } else if (requestStatus === '작업중') {
+                  updatePanes(3); // 4단계 패널
+              } else if (requestStatus === '작업 완료') {
+                  updatePanes(4); // 5단계 패널
+              } else {
+                  updatePanes(0); // 기본값: 1단계 패널
+              }
+          }
 
          // 초기 로드 시 실행
          initialize();
@@ -370,33 +421,63 @@ document.addEventListener('DOMContentLoaded', function () {
          });
      });
 
-    function cancelRequest(requestId, event) {
-        const clickedButton = event.currentTarget;
-        const requestStatus = clickedButton.dataset.status;
+         function cancelRequest(requestId, event) {
+         const clickedButton = event.currentTarget;
+         const requestStatus = clickedButton.dataset.status;
 
-        if (requestStatus === '완료') {
-            alert('완료된 의뢰는 취소할 수 없습니다.');
-            return;
-        }
-        if (confirm('정말로 이 의뢰를 취소하시겠습니까?')) {
-            // POST 요청을 보내기 위한 폼 생성
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/mypage/cancel-request/' + requestId;
+         if (requestStatus === '완료' || requestStatus === '취소 진행중' || requestStatus === '취소 완료') {
+             alert('완료되거나 이미 취소된 의뢰는 취소할 수 없습니다.');
+             return;
+         }
+         if (confirm('정말로 이 의뢰를 취소하시겠습니까?')) {
+             // POST 요청을 보내기 위한 폼 생성
+             const form = document.createElement('form');
+             form.method = 'POST';
+             form.action = '/mypage/cancel-request/' + requestId;
 
-            // CSRF 토큰이 필요할 경우 추가 (Spring Security 사용 시)
-            // const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-            // const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-            // const hiddenInput = document.createElement('input');
-            // hiddenInput.type = 'hidden';
-            // hiddenInput.name = csrfHeader;
-            // hiddenInput.value = csrfToken;
-            // form.appendChild(hiddenInput);
+             // CSRF 토큰이 필요할 경우 추가 (Spring Security 사용 시)
+             // const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+             // const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+             // const hiddenInput = document.createElement('input');
+             // hiddenInput.type = 'hidden';
+             // hiddenInput.name = csrfHeader;
+             // hiddenInput.value = csrfToken;
+             // form.appendChild(hiddenInput);
 
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
+             document.body.appendChild(form);
+             form.submit();
+         }
+     }
+
+     // 파일 다운로드 함수
+     function downloadFile(requestId, fileName) {
+         if (!fileName || fileName.trim() === '') {
+             alert('다운로드할 파일이 없습니다.');
+             return;
+         }
+         
+         // POST 요청을 보내기 위한 폼 생성
+         const form = document.createElement('form');
+         form.method = 'POST';
+         form.action = '/mypage/download-single-file';
+         
+         // requestId와 fileName을 hidden input으로 추가
+         const requestIdInput = document.createElement('input');
+         requestIdInput.type = 'hidden';
+         requestIdInput.name = 'requestId';
+         requestIdInput.value = requestId;
+         form.appendChild(requestIdInput);
+         
+         const fileNameInput = document.createElement('input');
+         fileNameInput.type = 'hidden';
+         fileNameInput.name = 'fileName';
+         fileNameInput.value = fileName;
+         form.appendChild(fileNameInput);
+         
+         document.body.appendChild(form);
+         form.submit();
+         document.body.removeChild(form);
+     }
  </script>
 
 <jsp:include page="footer.jsp" />

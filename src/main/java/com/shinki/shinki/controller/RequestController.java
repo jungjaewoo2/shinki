@@ -177,6 +177,8 @@ public class RequestController {
     @PostMapping("/update-request")
     public String updateRequest(@Valid @ModelAttribute Request request,
                                @RequestParam(required = false) MultipartFile file,
+                               @RequestParam(required = false) String existingFilePath,
+                               @RequestParam(required = false) String removeExistingFileFlag,
                                HttpSession session,
                                RedirectAttributes redirectAttributes) {
         try {
@@ -185,17 +187,43 @@ public class RequestController {
                 return "redirect:/mypage/login";
             }
             
-            // 기존 파일 경로 유지 여부 (파일 삭제 버튼 클릭 시 null로 넘어옴)
-            String existingFilePath = request.getFilePath();
-
+            // 기존 파일 삭제 플래그 확인
+            boolean shouldRemoveExistingFile = "true".equals(removeExistingFileFlag);
+            
             // 파일 업로드 서비스 호출
-            requestService.updateRequest(request, file);
+            requestService.updateRequest(request, file, existingFilePath, shouldRemoveExistingFile);
             
             redirectAttributes.addFlashAttribute("message", "의뢰가 성공적으로 수정되었습니다.");
             return "redirect:/mypage/order-detail/" + request.getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "의뢰 수정 중 오류가 발생했습니다: " + e.getMessage());
             return "redirect:/mypage/edit-request/" + request.getId();
+        }
+    }
+
+    @GetMapping("/cancel-request/{id}")
+    public String cancelRequestPage(@PathVariable Long id, HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            return "redirect:/mypage/login";
+        }
+
+        try {
+            Request request = requestService.getRequestById(id);
+            if (request == null) {
+                return "redirect:/mypage/orders";
+            }
+            
+            // 현재 사용자의 의뢰인지 확인
+            Member member = memberService.findByUsername(username);
+            if (!request.getMember().getId().equals(member.getId())) {
+                return "redirect:/mypage/orders";
+            }
+            
+            model.addAttribute("request", request);
+            return "mypage/cancel-request";
+        } catch (Exception e) {
+            return "redirect:/mypage/orders";
         }
     }
 
@@ -208,11 +236,16 @@ public class RequestController {
 
         try {
             Request request = requestService.getRequestById(id);
-            if (!"완료".equals(request.getStatus())) {
-                requestService.updateRequestStatus(id, "취소");
-                redirectAttributes.addFlashAttribute("message", "의뢰가 성공적으로 취소되었습니다.");
+            if (request == null) {
+                redirectAttributes.addFlashAttribute("error", "해당 의뢰를 찾을 수 없습니다.");
+                return "redirect:/mypage/orders";
+            }
+            
+            if ("완료".equals(request.getStatus()) || "취소 진행중".equals(request.getStatus()) || "취소 완료".equals(request.getStatus())) {
+                redirectAttributes.addFlashAttribute("error", "완료되거나 이미 취소된 의뢰는 취소할 수 없습니다.");
             } else {
-                redirectAttributes.addFlashAttribute("error", "완료된 의뢰는 취소할 수 없습니다.");
+                requestService.updateRequestStatus(id, "취소 진행중");
+                redirectAttributes.addFlashAttribute("message", "의뢰가 성공적으로 취소 요청되었습니다.");
             }
             return "redirect:/mypage/order-detail/" + id;
         } catch (Exception e) {
@@ -221,7 +254,57 @@ public class RequestController {
         }
     }
 
-    @PostMapping("/download-files")
+         @PostMapping("/download-single-file")
+     public void downloadSingleFile(@RequestParam Long requestId,
+                                   @RequestParam String fileName,
+                                   HttpSession session,
+                                   HttpServletResponse response) throws IOException {
+         // 세션에서 로그인된 사용자 정보 가져오기
+         String username = (String) session.getAttribute("username");
+         if (username == null) {
+             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그인이 필요합니다.");
+             return;
+         }
+         
+         try {
+             Member member = memberService.findByUsername(username);
+             Request request = requestService.getRequestById(requestId);
+             
+             // 권한 확인 및 파일 존재 확인
+             if (request == null || !request.getMember().getId().equals(member.getId()) || 
+                 !"작업 완료".equals(request.getStatus()) || 
+                 !fileName.equals(request.getFilePath())) {
+                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "파일 다운로드 권한이 없습니다.");
+                 return;
+             }
+             
+             // 파일 존재 확인
+             File file = new File("src/main/webapp/uploads/request/" + fileName);
+             if (!file.exists()) {
+                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "파일을 찾을 수 없습니다.");
+                 return;
+             }
+             
+             // 파일 다운로드 설정
+             response.setContentType("application/octet-stream");
+             response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+             response.setContentLength((int) file.length());
+             
+             // 파일 스트림으로 응답 전송
+             try (FileInputStream fileIn = new FileInputStream(file);
+                  java.io.OutputStream out = response.getOutputStream()) {
+                 byte[] buffer = new byte[1024];
+                 int length;
+                 while ((length = fileIn.read(buffer)) > 0) {
+                     out.write(buffer, 0, length);
+                 }
+             }
+         } catch (Exception e) {
+             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "파일 다운로드 중 오류가 발생했습니다.");
+         }
+     }
+
+     @PostMapping("/download-files")
     public void downloadFiles(@RequestParam List<Long> requestIds, 
                               HttpSession session, 
                               HttpServletResponse response) throws IOException {
@@ -240,7 +323,7 @@ public class RequestController {
             for (Long requestId : requestIds) {
                 Request request = requestService.getRequestById(requestId);
                 if (request != null && request.getMember().getId().equals(member.getId()) && 
-                    "완료".equals(request.getStatus()) && request.getFilePath() != null) {
+                    "작업 완료".equals(request.getStatus()) && request.getFilePath() != null) {
                     filePaths.add(request.getFilePath());
                 }
             }

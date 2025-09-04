@@ -67,10 +67,7 @@
                     <input class="form-control d-none" type="file" id="formFile" name="file" accept=".zip">
                     <div id="fileList" class="file-list mt-2"></div>
                 </div>
-                <div class="button-group flex-row justify-content-end gap-1 w-100">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('formFile').click()">추가</button>
-                    <button type="button" class="btn btn-danger" onclick="clearFile()">삭제</button>
-                </div>
+
             </div>
 
             <div class="button-group justify-content-center">

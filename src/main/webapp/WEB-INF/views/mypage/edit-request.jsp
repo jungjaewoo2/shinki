@@ -69,16 +69,14 @@
                     <input class="form-control d-none" type="file" id="formFile" name="file" accept=".zip">
                     <div id="fileList" class="file-list mt-2">
                         <c:if test="${not empty request.filePath}">
-                            <div>기존 파일: ${fn:substringAfter(request.filePath, '/uploads/request/')}
+                            <div>기존 파일: ${request.filePath}
                                 <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeExistingFile()">삭제</button>
                             </div>
                         </c:if>
                     </div>
                 </div>
-                <div class="button-group flex-row justify-content-end gap-1 w-100">
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('formFile').click()">추가</button>
-                    <button type="button" class="btn btn-danger" onclick="clearFile()">삭제</button>
-                </div>
+                <input type="hidden" id="existingFilePath" name="existingFilePath" value="${request.filePath}">
+                <input type="hidden" id="removeExistingFileFlag" name="removeExistingFileFlag" value="false">
             </div>
 
             <div class="button-group justify-content-center">
@@ -201,7 +199,7 @@ function removeExistingFile() {
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = ''; // 기존 파일 표시 제거
         document.getElementById('dropAreaText').style.display = 'block'; // 드롭 영역 텍스트 표시
-        // TODO: 서버에 기존 파일 삭제 요청 보내는 로직 필요
+        document.getElementById('removeExistingFileFlag').value = 'true'; // 기존 파일 삭제 플래그 설정
     }
 }
 
