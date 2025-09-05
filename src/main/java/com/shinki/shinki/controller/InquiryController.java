@@ -5,6 +5,7 @@ import com.shinki.shinki.entity.Member;
 import com.shinki.shinki.service.InquiryService;
 import com.shinki.shinki.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,9 @@ public class InquiryController {
     
     @Autowired
     private MemberService memberService;
+    
+    @Value("${file.upload.path}")
+    private String uploadPath;
     
     @GetMapping("/inquiry")
     public String inquiryPage(HttpSession session, Model model) {
@@ -76,7 +80,8 @@ public class InquiryController {
             if (file != null && !file.isEmpty()) {
                 logger.info("파일 업로드 조건 만족: 파일 존재 및 비어있지 않음");
                 logger.info("파일 업로드 시작: {}", file.getOriginalFilename());
-                String uploadDir = "src/main/webapp/uploads/inquiry/";
+                //String uploadDir = "src/main/webapp/uploads/inquiry/";
+                String uploadDir = uploadPath + "/inquiry/";
                 File dir = new File(uploadDir);
                 if (!dir.exists()) {
                     dir.mkdirs();
