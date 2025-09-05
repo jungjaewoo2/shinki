@@ -333,151 +333,81 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>-->
 
- <script>
-     document.addEventListener('DOMContentLoaded', function() {
-         // 모든 .progress-step과 .prog-pane 요소를 선택
-         const progressSteps = document.querySelectorAll('.progress-step');
-         const progPanes = document.querySelectorAll('.prog-pane');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+   // 모든 .progress-step과 .prog-pane 요소를 선택
+   const progressSteps = document.querySelectorAll('.progress-step');
+   const progPanes = document.querySelectorAll('.prog-pane');
 
-         // 특정 .prog-pane만 표시하는 함수
-         function updatePanes(activeIndex) {
-             // 모든 .prog-pane을 숨김
-             progPanes.forEach(pane => {
-                 pane.style.display = 'none';
-             });
+   // 마지막 .active 단계에 둥근 테두리 스타일 추가
+   function updateActiveStepStyles() {
+       // 모든 .progress-step에서 기존 스타일 초기화
+       progressSteps.forEach(step => {
+           step.style.borderTopRightRadius = '0';
+           step.style.borderBottomRightRadius = '0';
+       });
 
-             // activeIndex에 해당하는 .prog-pane만 표시
-             if (activeIndex >= 0 && activeIndex < progPanes.length) {
-                 progPanes[activeIndex].style.display = 'block';
-             }
-         }
+       // .active 클래스를 가진 마지막 요소 찾기
+       const activeSteps = document.querySelectorAll('.progress-step.active');
+       const lastActiveStep = activeSteps[activeSteps.length - 1];
 
-         // .active 클래스 업데이트: 클릭한 단계까지 모든 이전 단계에 .active 추가
-         function updateActiveSteps(clickedIndex) {
-             // 모든 .progress-step에서 .active 클래스 제거
-             progressSteps.forEach(step => step.classList.remove('active'));
+       // 마지막 .active 요소에 둥근 테두리 스타일 추가
+       if (lastActiveStep) {
+           lastActiveStep.style.borderTopRightRadius = '50px';
+           lastActiveStep.style.borderBottomRightRadius = '50px';
+       }
+   }
 
-             // 클릭한 단계까지 모든 이전 단계에 .active 클래스 추가
-             for (let i = 0; i <= clickedIndex; i++) {
-                 progressSteps[i].classList.add('active');
-             }
+   // 특정 .prog-pane만 표시하는 함수
+   function updatePanes(activeIndex) {
+       // 모든 .prog-pane을 숨김
+       progPanes.forEach(pane => {
+           pane.style.display = 'none';
+       });
 
-             // .prog-pane 업데이트 (클릭한 단계에 해당하는 패널만 표시)
-             updatePanes(clickedIndex);
-         }
+       // activeIndex에 해당하는 .prog-pane만 표시
+       if (activeIndex >= 0 && activeIndex < progPanes.length) {
+           progPanes[activeIndex].style.display = 'block';
+       }
+   }
 
-                   // 초기 상태 설정
-          function initialize() {
-              // status 값에 따라 초기 상태 설정
-              const requestStatus = '${not empty request ? request.status : ""}';
-              
-              // 모든 .progress-step에서 .active 클래스 제거
-              progressSteps.forEach(step => step.classList.remove('active'));
-              
-              // 모든 패널 숨기기
-              progPanes.forEach(pane => pane.style.display = 'none');
-              
-              // status에 따라 적절한 단계까지 활성화
-              if (requestStatus === '의뢰 확인중' || requestStatus === '견적중' || requestStatus === '결제 진행' || requestStatus === '작업중' || requestStatus === '작업 완료') {
-                  progressSteps[0].classList.add('active'); // 1단계 활성화
-              }
-              if (requestStatus === '견적중' || requestStatus === '결제 진행' || requestStatus === '작업중' || requestStatus === '작업 완료') {
-                  progressSteps[1].classList.add('active'); // 2단계 활성화
-              }
-              if (requestStatus === '결제 진행' || requestStatus === '작업중' || requestStatus === '작업 완료') {
-                  progressSteps[2].classList.add('active'); // 3단계 활성화
-              }
-              if (requestStatus === '작업중' || requestStatus === '작업 완료') {
-                  progressSteps[3].classList.add('active'); // 4단계 활성화
-              }
-              if (requestStatus === '작업 완료') {
-                  progressSteps[4].classList.add('active'); // 5단계 활성화
-              }
-              
-              // status에 따라 해당하는 패널 표시
-              if (requestStatus === '의뢰 확인중') {
-                  updatePanes(0); // 1단계 패널
-              } else if (requestStatus === '견적중') {
-                  updatePanes(1); // 2단계 패널
-              } else if (requestStatus === '결제 진행') {
-                  updatePanes(2); // 3단계 패널
-              } else if (requestStatus === '작업중') {
-                  updatePanes(3); // 4단계 패널
-              } else if (requestStatus === '작업 완료') {
-                  updatePanes(4); // 5단계 패널
-              } else {
-                  updatePanes(0); // 기본값: 1단계 패널
-              }
-          }
+   // .active 클래스 업데이트: 클릭한 단계까지 모든 이전 단계에 .active 추가
+   function updateActiveSteps(clickedIndex) {
+       // 모든 .progress-step에서 .active 클래스 제거
+       progressSteps.forEach(step => step.classList.remove('active'));
 
-         // 초기 로드 시 실행
-         initialize();
+       // 클릭한 단계까지 모든 이전 단계에 .active 클래스 추가
+       for (let i = 0; i <= clickedIndex; i++) {
+           progressSteps[i].classList.add('active');
+       }
 
-         // .progress-step 클릭 시 .active 클래스 업데이트 및 .prog-pane 업데이트
-         progressSteps.forEach((step, index) => {
-             step.addEventListener('click', function() {
-                 updateActiveSteps(index);
-             });
-         });
-     });
+       // .prog-pane 업데이트 (클릭한 단계에 해당하는 패널만 표시)
+       updatePanes(clickedIndex);
 
-         function cancelRequest(requestId, event) {
-         const clickedButton = event.currentTarget;
-         const requestStatus = clickedButton.dataset.status;
+       // 마지막 .active 단계에 스타일 적용
+       updateActiveStepStyles();
+   }
 
-         if (requestStatus === '완료' || requestStatus === '취소 진행중' || requestStatus === '취소 완료') {
-             alert('완료되거나 이미 취소된 의뢰는 취소할 수 없습니다.');
-             return;
-         }
-         if (confirm('정말로 이 의뢰를 취소하시겠습니까?')) {
-             // POST 요청을 보내기 위한 폼 생성
-             const form = document.createElement('form');
-             form.method = 'POST';
-             form.action = '/mypage/cancel-request/' + requestId;
+   // 초기 상태 설정
+   function initialize() {
+       // 초기 상태에서 첫 번째 .progress-step에 .active 추가
+       if (progressSteps.length > 0) {
+           progressSteps[0].classList.add('active');
+           updatePanes(0);
+           updateActiveStepStyles();
+       }
+   }
 
-             // CSRF 토큰이 필요할 경우 추가 (Spring Security 사용 시)
-             // const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-             // const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-             // const hiddenInput = document.createElement('input');
-             // hiddenInput.type = 'hidden';
-             // hiddenInput.name = csrfHeader;
-             // hiddenInput.value = csrfToken;
-             // form.appendChild(hiddenInput);
+   // 초기 로드 시 실행
+   initialize();
 
-             document.body.appendChild(form);
-             form.submit();
-         }
-     }
-
-     // 파일 다운로드 함수
-     function downloadFile(requestId, fileName) {
-         if (!fileName || fileName.trim() === '') {
-             alert('다운로드할 파일이 없습니다.');
-             return;
-         }
-         
-         // POST 요청을 보내기 위한 폼 생성
-         const form = document.createElement('form');
-         form.method = 'POST';
-         form.action = '/mypage/download-single-file';
-         
-         // requestId와 fileName을 hidden input으로 추가
-         const requestIdInput = document.createElement('input');
-         requestIdInput.type = 'hidden';
-         requestIdInput.name = 'requestId';
-         requestIdInput.value = requestId;
-         form.appendChild(requestIdInput);
-         
-         const fileNameInput = document.createElement('input');
-         fileNameInput.type = 'hidden';
-         fileNameInput.name = 'fileName';
-         fileNameInput.value = fileName;
-         form.appendChild(fileNameInput);
-         
-         document.body.appendChild(form);
-         form.submit();
-         document.body.removeChild(form);
-     }
- </script>
+   // .progress-step 클릭 시 .active 클래스 업데이트 및 .prog-pane 업데이트
+   progressSteps.forEach((step, index) => {
+       step.addEventListener('click', function() {
+           updateActiveSteps(index);
+       });
+   });
+});
+</script>
 
 <jsp:include page="footer.jsp" />

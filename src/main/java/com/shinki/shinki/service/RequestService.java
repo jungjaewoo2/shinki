@@ -36,6 +36,10 @@ public class RequestService {
         return requestRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
     }
     
+    public List<Request> getRequestsByMemberIdAndDate(Long memberId, String searchDate) {
+        return requestRepository.findByMemberIdAndCreatedAtDateOrderByCreatedAtDesc(memberId, searchDate);
+    }
+    
     public List<Request> getAllRequests() {
         return requestRepository.findAllByOrderByCreatedAtDesc();
     }

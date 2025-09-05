@@ -106,7 +106,9 @@ public class RequestController {
     }
     
     @GetMapping("/orders")
-    public String ordersPage(HttpSession session, Model model) {
+    public String ordersPage(@RequestParam(required = false) String searchDate,
+                           HttpSession session, 
+                           Model model) {
         // 세션에서 로그인된 사용자 정보 가져오기
         String username = (String) session.getAttribute("username");
         if (username == null) {
@@ -119,7 +121,13 @@ public class RequestController {
             // '취소' 상태의 의뢰를 제외합니다.
             requests = requests.stream().filter(r -> !"취소".equals(r.getStatus())).collect(Collectors.toList());
 
+            // 날짜 검색이 있는 경우 필터링
+            if (searchDate != null && !searchDate.trim().isEmpty()) {
+                requests = requestService.getRequestsByMemberIdAndDate(member.getId(), searchDate);
+            }
+
             model.addAttribute("requests", requests);
+            model.addAttribute("searchDate", searchDate);
 
             // '작업중' 및 '완료' 상태의 요청 개수 계산
             long inProgressCount = requests.stream().filter(r -> "작업중".equals(r.getStatus())).count();
